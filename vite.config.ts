@@ -1,0 +1,56 @@
+/// <reference types="vitest" />
+/// <reference types="vite/client" />
+
+import { defineConfig } from 'vite';
+import solidPlugin from 'vite-plugin-solid';
+import { HTMLElements, SVGElements } from "solid-js/web";
+
+export default defineConfig({
+  plugins: [
+    solidPlugin({
+      solid: {
+        moduleName: "solid-js/web",
+        // @ts-ignore
+        generate: "dynamic",
+        renderers: [
+          {
+            name: 'dom',
+            moduleName: 'solid-js/web',
+            elements: [...HTMLElements, ...SVGElements]
+          },
+          {
+            name: 'universal',
+            moduleName: 'solid-three',
+            elements: [],
+          },
+        ],
+      },
+    }),
+  ],
+  server: {
+    port: 3000,
+  },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    transformMode: {
+      web: [/\.[jt]sx?$/],
+    },
+    setupFiles: './setupVitest.ts',
+    // solid needs to be inline to work around
+    // a resolution issue in vitest:
+    deps: {
+      inline: [/solid-js/],
+    },
+    // if you have few tests, try commenting one
+    // or both out to improve performance:
+    threads: false,
+    isolate: false,
+  },
+  build: {
+    target: 'esnext',
+  },
+  resolve: {
+    conditions: ['development', 'browser'],
+  },
+});
